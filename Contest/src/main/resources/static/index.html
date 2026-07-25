@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Contests</title>
+    <style>
+        :root {
+            --bg: #f5f6f8;
+            --surface: #ffffff;
+            --border: #e3e6ec;
+            --text: #1c1e21;
+            --muted: #6b7280;
+            --accent: #2563eb;
+            --accent-hover: #1d4ed8;
+            --gold: #b8860b;
+            --silver: #6b7280;
+            --bronze: #a0522d;
+            --radius: 10px;
+            --shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+        }
+
+        .page {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 48px 24px 96px;
+        }
+
+        header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin: 0 0 4px;
+        }
+
+        header p {
+            margin: 0 0 32px;
+            color: var(--muted);
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 24px;
+        }
+
+        .card + .card { margin-top: 24px; }
+
+        h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0 0 16px;
+        }
+
+        .field { margin-bottom: 16px; }
+        .field:last-of-type { margin-bottom: 24px; }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px 12px;
+            font-size: 15px;
+            font-family: inherit;
+            color: var(--text);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            transition: border-color 120ms, box-shadow 120ms;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        .prizes {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        @media (max-width: 520px) {
+            .prizes { grid-template-columns: 1fr; }
+        }
+
+        button {
+            appearance: none;
+            border: none;
+            background: var(--accent);
+            color: white;
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: 500;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 120ms;
+        }
+
+        button:hover { background: var(--accent-hover); }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .contest-list { list-style: none; margin: 0; padding: 0; }
+
+        .contest {
+            padding: 16px 0;
+            border-top: 1px solid var(--border);
+        }
+        .contest:first-child { border-top: none; padding-top: 0; }
+
+        .contest-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0 0 8px;
+        }
+
+        .prize-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .prize {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            font-size: 13px;
+        }
+
+        .place {
+            font-weight: 600;
+            font-size: 11px;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+        .place.first  { color: var(--gold); }
+        .place.second { color: var(--silver); }
+        .place.third  { color: var(--bronze); }
+
+        .empty {
+            color: var(--muted);
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .error {
+            margin-top: 12px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            background: #fef2f2;
+            color: #991b1b;
+            font-size: 14px;
+            border: 1px solid #fecaca;
+        }
+        .error[hidden] { display: none; }
+    </style>
+</head>
+<body>
+<main class="page">
+    <header>
+        <h1>Contests</h1>
+        <p>Create a contest and set its prizes.</p>
+    </header>
+
+    <section class="card">
+        <h2>New contest</h2>
+        <form id="contest-form">
+            <div class="field">
+                <label for="contestName">Contest title</label>
+                <input type="text" name="contestName" id="contestName" placeholder="e.g. Summer Hackathon" required>
+            </div>
+
+            <div class="prizes">
+                <div class="field">
+                    <label for="firstPrize">1st prize</label>
+                    <input type="text" name="firstPrize" id="firstPrize" placeholder="Gold medal" required>
+                </div>
+                <div class="field">
+                    <label for="secondPrize">2nd prize</label>
+                    <input type="text" name="secondPrize" id="secondPrize" placeholder="Silver medal">
+                </div>
+                <div class="field">
+                    <label for="thirdPrize">3rd prize</label>
+                    <input type="text" name="thirdPrize" id="thirdPrize" placeholder="Bronze medal">
+                </div>
+            </div>
+
+            <button type="submit" id="submit-btn">Create contest</button>
+            <p id="form-error" class="error" hidden></p>
+        </form>
+    </section>
+
+    <section class="card">
+        <h2>All contests</h2>
+        <ul id="contest-list" class="contest-list"></ul>
+        <p id="empty-state" class="empty">No contests yet.</p>
+    </section>
+</main>
+
+<script>
+    const form = document.getElementById('contest-form');
+    const list = document.getElementById('contest-list');
+    const empty = document.getElementById('empty-state');
+    const errorEl = document.getElementById('form-error');
+    const submitBtn = document.getElementById('submit-btn');
+
+    const PLACE_LABEL = { FIRST: '1st', SECOND: '2nd', THIRD: '3rd' };
+    const PLACE_CLASS = { FIRST: 'first', SECOND: 'second', THIRD: 'third' };
+
+    function render(contests) {
+        list.innerHTML = '';
+        if (!contests.length) {
+            empty.hidden = false;
+            return;
+        }
+        empty.hidden = true;
+        for (const c of contests) {
+            const li = document.createElement('li');
+            li.className = 'contest';
+
+            const name = document.createElement('p');
+            name.className = 'contest-name';
+            name.textContent = c.name;
+            li.appendChild(name);
+
+            const prizes = document.createElement('ul');
+            prizes.className = 'prize-list';
+            for (const p of c.prizes ?? []) {
+                const item = document.createElement('li');
+                item.className = 'prize';
+                const place = document.createElement('span');
+                place.className = 'place ' + (PLACE_CLASS[p.place] ?? '');
+                place.textContent = PLACE_LABEL[p.place] ?? p.place;
+                const value = document.createElement('span');
+                value.textContent = p.value;
+                item.append(place, value);
+                prizes.appendChild(item);
+            }
+            li.appendChild(prizes);
+            list.appendChild(li);
+        }
+    }
+
+    async function loadContests() {
+        const res = await fetch('/contests');
+        if (!res.ok) throw new Error('Failed to load contests');
+        render(await res.json());
+    }
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        errorEl.hidden = true;
+        submitBtn.disabled = true;
+        try {
+            const res = await fetch('/contests', {
+                method: 'POST',
+                body: new URLSearchParams(new FormData(form)),
+            });
+            if (!res.ok) throw new Error('Server returned ' + res.status);
+            form.reset();
+            await loadContests();
+        } catch (err) {
+            errorEl.textContent = err.message;
+            errorEl.hidden = false;
+        } finally {
+            submitBtn.disabled = false;
+        }
+    });
+
+    loadContests().catch((err) => {
+        errorEl.textContent = err.message;
+        errorEl.hidden = false;
+    });
+</script>
+</body>
+</html>
