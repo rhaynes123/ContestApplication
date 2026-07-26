@@ -6,6 +6,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.http.HttpStatus;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -14,24 +15,18 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 class ContestServiceTest {
 
-    @Autowired
-    ContestService service;
-    @Autowired
-    ContestRepository contests;
-    @Autowired
-    GuessRepository guesses;
-    @Autowired
-    MutableClock clock;
+    @Autowired ContestService service;
+    @Autowired ContestRepository contests;
+    @Autowired GuessRepository guesses;
+    @Autowired MutableClock clock;
 
     @TestConfiguration
     static class Config {
-        @Bean
-        @Primary
+        @Bean @Primary
         MutableClock mutableClock() {
             return new MutableClock(Instant.parse("2026-01-01T00:00:00Z"));
         }
@@ -47,12 +42,12 @@ class ContestServiceTest {
     }
 
     private ContestForm form(String name, int secret, Instant deadline) {
-        return new ContestForm(name, secret, deadline.toString(), "Gold", "Silver", "Bronze");
+        return new ContestForm(name, secret, deadline, "Gold", "Silver", "Bronze");
     }
 
     private Contest freshContest(int secret) {
         clock.set(Instant.parse("2026-01-01T00:00:00Z"));
-        return service.create(form("Test", secret, Instant.parse("2026-02-01T00:00:00Z")));
+        return service.create(form("Test", secret, Instant.parse("2026-02-01T00:00:00Z"))).value();
     }
 
     @Test
@@ -69,7 +64,7 @@ class ContestServiceTest {
     void submitGuessBeforeDeadlinePersists() {
         Contest c = freshContest(500);
         clock.set(Instant.parse("2026-01-15T00:00:00Z"));
-        Guess g = service.submitGuess(c.getId(), new GuessForm("Alice", 400));
+        Guess g = service.submitGuess(c.getId(), new GuessForm("Alice", 400)).value();
         assertThat(g.getId()).isNotNull();
         assertThat(g.getPlayerName()).isEqualTo("Alice");
         assertThat(g.getValue()).isEqualTo(400);
@@ -77,21 +72,25 @@ class ContestServiceTest {
     }
 
     @Test
-    void submitGuessAfterDeadlineThrowsClosed() {
+    void submitGuessAfterDeadlineReturnsClosed() {
         Contest c = freshContest(500);
         clock.set(Instant.parse("2026-02-01T00:00:01Z"));
-        assertThatThrownBy(() -> service.submitGuess(c.getId(), new GuessForm("Alice", 400)))
-                .isInstanceOf(ContestClosedException.class);
+        ServiceResult<Guess> r = service.submitGuess(c.getId(), new GuessForm("Alice", 400));
+        assertThat(r.isOk()).isFalse();
+        assertThat(r.errorCode()).isEqualTo("contest_closed");
+        assertThat(r.errorStatus()).isEqualTo(HttpStatus.CONFLICT);
     }
 
     @Test
-    void duplicateNameInSameContestThrows_differentContestsOk() {
+    void duplicateNameInSameContestReturnsError_differentContestsOk() {
         Contest a = freshContest(100);
         Contest b = freshContest(200);
         clock.set(Instant.parse("2026-01-15T00:00:00Z"));
         service.submitGuess(a.getId(), new GuessForm("Alice", 10));
-        assertThatThrownBy(() -> service.submitGuess(a.getId(), new GuessForm("Alice", 20)))
-                .isInstanceOf(DuplicateGuessException.class);
+        ServiceResult<Guess> dup = service.submitGuess(a.getId(), new GuessForm("Alice", 20));
+        assertThat(dup.isOk()).isFalse();
+        assertThat(dup.errorCode()).isEqualTo("name_already_guessed");
+        assertThat(dup.errorStatus()).isEqualTo(HttpStatus.CONFLICT);
         service.submitGuess(b.getId(), new GuessForm("Alice", 30));
         assertThat(guesses.findByContest(b)).hasSize(1);
     }
@@ -109,7 +108,7 @@ class ContestServiceTest {
         service.submitGuess(c.getId(), new GuessForm("Best",     499)); // diff 1
 
         clock.set(Instant.parse("2026-02-02T00:00:00Z"));
-        Contest resolved = service.get(c.getId());
+        Contest resolved = service.get(c.getId()).value();
 
         List<Prize> ordered = resolved.getPrizes().stream()
                 .sorted((x, y) -> x.getPlace().compareTo(y.getPlace())).toList();
@@ -127,7 +126,7 @@ class ContestServiceTest {
         service.submitGuess(c.getId(), new GuessForm("Solo", 490));
 
         clock.set(Instant.parse("2026-02-02T00:00:00Z"));
-        Contest resolved = service.get(c.getId());
+        Contest resolved = service.get(c.getId()).value();
 
         List<Prize> ordered = resolved.getPrizes().stream()
                 .sorted((x, y) -> x.getPlace().compareTo(y.getPlace())).toList();
@@ -145,13 +144,13 @@ class ContestServiceTest {
         service.submitGuess(c.getId(), new GuessForm("Alice", 400));
 
         clock.set(Instant.parse("2026-02-02T00:00:00Z"));
-        Contest first = service.get(c.getId());
+        Contest first = service.get(c.getId()).value();
         Instant resolvedAt = first.getResolvedAt();
         String winner = first.getPrizes().stream()
                 .filter(p -> p.getPlace() == Place.FIRST).findFirst().orElseThrow().getWinnerName();
 
         clock.set(Instant.parse("2026-02-03T00:00:00Z"));
-        Contest second = service.get(c.getId());
+        Contest second = service.get(c.getId()).value();
         assertThat(second.getResolvedAt()).isEqualTo(resolvedAt);
         assertThat(second.getPrizes().stream()
                 .filter(p -> p.getPlace() == Place.FIRST).findFirst().orElseThrow().getWinnerName())

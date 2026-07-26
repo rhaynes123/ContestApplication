@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Contest" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="org.example.contest.ContestApplication" />
+    <module name="Contest.main" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+      <option name="ToolBeforeRunTask" enabled="true" actionId="Tool_External Tools_Start Postgres" />
+    </method>
+  </configuration>
+</component>

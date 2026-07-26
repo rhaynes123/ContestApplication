@@ -4,13 +4,9 @@ const empty = document.getElementById('empty-state');
 const errorEl = document.getElementById('form-error');
 const submitBtn = document.getElementById('submit-btn');
 
-const PLACE_LABEL = { FIRST: '1st', SECOND: '2nd', THIRD: '3rd' };
-const PLACE_CLASS = { FIRST: 'first', SECOND: 'second', THIRD: 'third' };
-
 function statusBadge(c) {
-    const now = Date.now();
     const deadline = new Date(c.deadline).getTime();
-    if (deadline > now) {
+    if (deadline > Date.now()) {
         return { text: 'Open · closes ' + new Date(c.deadline).toLocaleString(), cls: 'open' };
     }
     return c.isWon
@@ -51,21 +47,7 @@ function render(contests) {
         const prizes = document.createElement('ul');
         prizes.className = 'prize-list';
         for (const p of c.prizes ?? []) {
-            const item = document.createElement('li');
-            item.className = 'prize';
-            const place = document.createElement('span');
-            place.className = 'place ' + (PLACE_CLASS[p.place] ?? '');
-            place.textContent = PLACE_LABEL[p.place] ?? p.place;
-            const value = document.createElement('span');
-            value.textContent = p.value;
-            item.append(place, value);
-            if (p.winnerName) {
-                const w = document.createElement('span');
-                w.className = 'winner';
-                w.textContent = '→ ' + p.winnerName;
-                item.appendChild(w);
-            }
-            prizes.appendChild(item);
+            prizes.appendChild(prizeItem(p));
         }
         a.appendChild(prizes);
         li.appendChild(a);

@@ -1,14 +1,15 @@
 package org.example.contest;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 import java.time.Instant;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ContestService {
@@ -24,66 +25,61 @@ public class ContestService {
     }
 
     @Transactional
-    public Contest create(ContestForm form) {
+    public ServiceResult<Contest> create(ContestForm form) {
         if (form.contestName() == null || form.contestName().isBlank()
                 || form.secretValue() == null
-                || form.deadline() == null || form.deadline().isBlank()
+                || form.deadline() == null
                 || form.firstPrize() == null || form.firstPrize().isBlank()) {
-            throw new IllegalArgumentException("invalid_input");
-        }
-        Instant deadline;
-        try {
-            deadline = Instant.parse(form.deadline());
-        } catch (DateTimeParseException e) {
-            throw new IllegalArgumentException("invalid_input", e);
+            return ServiceResult.err(HttpStatus.BAD_REQUEST, "invalid_input");
         }
         List<Prize> prizes = new ArrayList<>(3);
         addPrize(prizes, form.firstPrize(), Place.FIRST);
         addPrize(prizes, form.secondPrize(), Place.SECOND);
         addPrize(prizes, form.thirdPrize(), Place.THIRD);
-        return contests.save(new Contest(form.contestName().trim(), form.secretValue(), deadline, prizes));
+        return ServiceResult.ok(contests.save(new Contest(form.contestName().trim(), form.secretValue(), form.deadline(), prizes)));
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<Contest> listAll() {
-        List<Contest> all = contests.findAll();
-        Instant now = clock.instant();
-        for (Contest c : all) {
-            if (c.getResolvedAt() == null && !c.getDeadline().isAfter(now)) {
-                resolveLocked(c.getId());
-            }
-        }
         return contests.findAll();
     }
 
     @Transactional
-    public Contest get(long id) {
-        Contest c = contests.findById(id).orElseThrow(() -> new ContestNotFoundException(id));
-        if (c.getResolvedAt() == null && !c.getDeadline().isAfter(clock.instant())) {
-            return resolveLocked(id);
+    public ServiceResult<Contest> get(long id) {
+        Optional<Contest> found = contests.findById(id);
+        if (found.isEmpty()) {
+            return ServiceResult.err(HttpStatus.NOT_FOUND, "not_found");
         }
-        return c;
+        Contest c = found.get();
+        if (c.getResolvedAt() == null && !c.getDeadline().isAfter(clock.instant())) {
+            return ServiceResult.ok(resolveLocked(id));
+        }
+        return ServiceResult.ok(c);
     }
 
     @Transactional
-    public Guess submitGuess(long contestId, GuessForm form) {
+    public ServiceResult<Guess> submitGuess(long contestId, GuessForm form) {
         if (form.playerName() == null || form.playerName().isBlank() || form.value() == null) {
-            throw new IllegalArgumentException("invalid_input");
+            return ServiceResult.err(HttpStatus.BAD_REQUEST, "invalid_input");
         }
-        Contest c = contests.findById(contestId).orElseThrow(() -> new ContestNotFoundException(contestId));
+        Optional<Contest> found = contests.findById(contestId);
+        if (found.isEmpty()) {
+            return ServiceResult.err(HttpStatus.NOT_FOUND, "not_found");
+        }
+        Contest c = found.get();
         Instant now = clock.instant();
         if (!c.getDeadline().isAfter(now)) {
-            throw new ContestClosedException(contestId);
+            return ServiceResult.err(HttpStatus.CONFLICT, "contest_closed");
         }
         String name = form.playerName().trim();
         if (guesses.existsByContestAndPlayerName(c, name)) {
-            throw new DuplicateGuessException(contestId, name);
+            return ServiceResult.err(HttpStatus.CONFLICT, "name_already_guessed");
         }
-        return guesses.save(new Guess(c, name, form.value(), now));
+        return ServiceResult.ok(guesses.save(new Guess(c, name, form.value(), now)));
     }
 
     private Contest resolveLocked(long id) {
-        Contest c = contests.findWithLockById(id).orElseThrow(() -> new ContestNotFoundException(id));
+        Contest c = contests.findWithLockById(id).orElseThrow();
         if (c.getResolvedAt() != null) {
             return c;
         }
@@ -97,16 +93,12 @@ public class ContestService {
                 .sorted(Comparator.comparing(Prize::getPlace))
                 .toList();
 
-        int assigned = 0;
-        for (int i = 0; i < prizes.size(); i++) {
-            if (i >= ordered.size()) break;
+        for (int i = 0; i < prizes.size() && i < ordered.size(); i++) {
             Prize p = prizes.get(i);
-            Guess winner = ordered.get(i);
-            p.setWinnerName(winner.getPlayerName());
+            p.setWinnerName(ordered.get(i).getPlayerName());
             p.setWon(true);
-            assigned++;
         }
-        c.setWon(!prizes.isEmpty() && assigned == prizes.size());
+        c.setWon(!prizes.isEmpty() && ordered.size() >= prizes.size());
         c.setResolvedAt(clock.instant());
         return contests.save(c);
     }
