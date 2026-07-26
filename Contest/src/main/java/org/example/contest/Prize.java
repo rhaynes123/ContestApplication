@@ -14,15 +14,18 @@ import lombok.Setter;
 @NoArgsConstructor
 public class Prize {
 
-    @Column(nullable = false)
+    @Column(name = "prize_value", nullable = false)
     private String value;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Place place;
 
+    @Column(nullable = false)
+    private boolean isWon;
+
     @Column
-    private Boolean isWon;
+    private String winnerName;
 
     public Prize(String value, Place place) {
         this.value = value;

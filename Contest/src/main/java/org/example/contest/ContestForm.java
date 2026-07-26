@@ -2,7 +2,8 @@ package org.example.contest;
 
 public record ContestForm(
         String contestName,
-        String contestSecret,
+        Integer secretValue,
+        String deadline,
         String firstPrize,
         String secondPrize,
         String thirdPrize

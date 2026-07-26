@@ -13,6 +13,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,17 +31,25 @@ public class Contest {
     private String name;
 
     @Column(nullable = false)
-    private String secret;
+    private int secretValue;
+
+    @Column(nullable = false)
+    private Instant deadline;
+
+    @Column(nullable = false)
+    private boolean isWon;
+
     @Column
-    private Boolean isWon;
+    private Instant resolvedAt;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "contest_prizes", joinColumns = @JoinColumn(name = "contest_id"))
     private List<Prize> prizes = new ArrayList<>();
 
-    public Contest(String name, List<Prize> prizes, String secret) {
+    public Contest(String name, int secretValue, Instant deadline, List<Prize> prizes) {
         this.name = name;
+        this.secretValue = secretValue;
+        this.deadline = deadline;
         this.prizes = new ArrayList<>(prizes);
-        this.secret = secret;
     }
 }

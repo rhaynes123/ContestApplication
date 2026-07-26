@@ -4,188 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Contests</title>
-    <style>
-        :root {
-            --bg: #f5f6f8;
-            --surface: #ffffff;
-            --border: #e3e6ec;
-            --text: #1c1e21;
-            --muted: #6b7280;
-            --accent: #2563eb;
-            --accent-hover: #1d4ed8;
-            --gold: #b8860b;
-            --silver: #6b7280;
-            --bronze: #a0522d;
-            --radius: 10px;
-            --shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
-        }
-
-        * { box-sizing: border-box; }
-
-        body {
-            margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.5;
-        }
-
-        .page {
-            max-width: 720px;
-            margin: 0 auto;
-            padding: 48px 24px 96px;
-        }
-
-        header h1 {
-            font-size: 28px;
-            font-weight: 600;
-            margin: 0 0 4px;
-        }
-
-        header p {
-            margin: 0 0 32px;
-            color: var(--muted);
-        }
-
-        .card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            padding: 24px;
-        }
-
-        .card + .card { margin-top: 24px; }
-
-        h2 {
-            font-size: 18px;
-            font-weight: 600;
-            margin: 0 0 16px;
-        }
-
-        .field { margin-bottom: 16px; }
-        .field:last-of-type { margin-bottom: 24px; }
-
-        label {
-            display: block;
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--muted);
-            margin-bottom: 6px;
-        }
-
-        input[type="text"] {
-            width: 100%;
-            padding: 10px 12px;
-            font-size: 15px;
-            font-family: inherit;
-            color: var(--text);
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            transition: border-color 120ms, box-shadow 120ms;
-        }
-
-        input[type="text"]:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-        }
-
-        .prizes {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-        }
-
-        @media (max-width: 520px) {
-            .prizes { grid-template-columns: 1fr; }
-        }
-
-        button {
-            appearance: none;
-            border: none;
-            background: var(--accent);
-            color: white;
-            font-family: inherit;
-            font-size: 15px;
-            font-weight: 500;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 120ms;
-        }
-
-        button:hover { background: var(--accent-hover); }
-        button:disabled { opacity: 0.6; cursor: not-allowed; }
-
-        .contest-list { list-style: none; margin: 0; padding: 0; }
-
-        .contest {
-            padding: 16px 0;
-            border-top: 1px solid var(--border);
-        }
-        .contest:first-child { border-top: none; padding-top: 0; }
-
-        .contest-name {
-            font-size: 16px;
-            font-weight: 600;
-            margin: 0 0 8px;
-        }
-
-        .prize-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .prize {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 10px;
-            border-radius: 999px;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            font-size: 13px;
-        }
-
-        .place {
-            font-weight: 600;
-            font-size: 11px;
-            letter-spacing: 0.03em;
-            text-transform: uppercase;
-        }
-        .place.first  { color: var(--gold); }
-        .place.second { color: var(--silver); }
-        .place.third  { color: var(--bronze); }
-
-        .empty {
-            color: var(--muted);
-            font-size: 14px;
-            margin: 0;
-        }
-
-        .error {
-            margin-top: 12px;
-            padding: 10px 12px;
-            border-radius: 8px;
-            background: #fef2f2;
-            color: #991b1b;
-            font-size: 14px;
-            border: 1px solid #fecaca;
-        }
-        .error[hidden] { display: none; }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <main class="page">
     <header>
         <h1>Contests</h1>
-        <p>Create a contest and set its prizes.</p>
+        <p>Create a contest, set a secret number, and let players guess.</p>
     </header>
 
     <section class="card">
@@ -197,8 +22,13 @@
             </div>
 
             <div class="field">
-                <label for="contestSecret">Contest Secret</label>
-                <input type="text" name="contestSecret" id="contestSecret" placeholder="e.g. 5000" required>
+                <label for="secretValue">Secret number</label>
+                <input type="number" name="secretValue" id="secretValue" placeholder="e.g. 5000" required>
+            </div>
+
+            <div class="field">
+                <label for="deadline">Deadline</label>
+                <input type="datetime-local" name="deadline" id="deadline" required>
             </div>
 
             <div class="prizes">

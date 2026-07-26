@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Contest</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main class="page">
+    <header>
+        <p><a href="index.html">← All contests</a></p>
+        <h1 id="contest-name">Loading…</h1>
+        <p id="contest-meta"></p>
+    </header>
+
+    <section class="card" id="guess-card" hidden>
+        <h2>Submit your guess</h2>
+        <form id="guess-form">
+            <div class="field">
+                <label for="playerName">Your name</label>
+                <input type="text" name="playerName" id="playerName" required>
+            </div>
+            <div class="field">
+                <label for="value">Your guess</label>
+                <input type="number" name="value" id="value" required>
+            </div>
+            <button type="submit" id="guess-submit">Submit guess</button>
+            <p id="guess-error" class="error" hidden></p>
+            <p id="guess-ok" class="empty" hidden>Guess submitted. Good luck!</p>
+        </form>
+    </section>
+
+    <section class="card">
+        <h2>Prizes</h2>
+        <div id="reveal" class="reveal" hidden></div>
+        <ul id="prize-list" class="prize-list"></ul>
+    </section>
+</main>
+
+<script src="contest.js" defer></script>
+</body>
+</html>
