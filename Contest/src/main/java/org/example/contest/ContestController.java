@@ -22,7 +22,7 @@ public class ContestController {
 
     @GetMapping
     public List<Contest> list() {
-        return contests.all();
+        return contests.allActive();
     }
 
     @PostMapping

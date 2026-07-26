@@ -21,6 +21,9 @@ public class Prize {
     @Column(nullable = false)
     private Place place;
 
+    @Column
+    private Boolean isWon;
+
     public Prize(String value, Place place) {
         this.value = value;
         this.place = place;

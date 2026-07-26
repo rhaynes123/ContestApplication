@@ -29,12 +29,18 @@ public class Contest {
     @Column(nullable = false)
     private String name;
 
+    @Column(nullable = false)
+    private String secret;
+    @Column
+    private Boolean isWon;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "contest_prizes", joinColumns = @JoinColumn(name = "contest_id"))
     private List<Prize> prizes = new ArrayList<>();
 
-    public Contest(String name, List<Prize> prizes) {
+    public Contest(String name, List<Prize> prizes, String secret) {
         this.name = name;
         this.prizes = new ArrayList<>(prizes);
+        this.secret = secret;
     }
 }
