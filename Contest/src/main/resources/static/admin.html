@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Contests</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main class="page">
+    <header>
+        <h1>Contests</h1>
+        <p>Create a contest, set a secret number, and let players guess.</p>
+    </header>
+
+    <section class="card">
+        <h2>New contest</h2>
+        <form id="contest-form">
+            <div class="field">
+                <label for="contestName">Contest title</label>
+                <input type="text" name="contestName" id="contestName" placeholder="e.g. Summer Hackathon" required>
+            </div>
+
+            <div class="field">
+                <label for="secretValue">Secret number</label>
+                <input type="number" name="secretValue" id="secretValue" placeholder="e.g. 5000" required>
+            </div>
+
+            <div class="field">
+                <label for="deadline">Deadline</label>
+                <input type="datetime-local" name="deadline" id="deadline" required>
+            </div>
+
+            <div class="prizes">
+                <div class="field">
+                    <label for="firstPrize">1st prize</label>
+                    <input type="text" name="firstPrize" id="firstPrize" placeholder="Gold medal" required>
+                </div>
+                <div class="field">
+                    <label for="secondPrize">2nd prize</label>
+                    <input type="text" name="secondPrize" id="secondPrize" placeholder="Silver medal">
+                </div>
+                <div class="field">
+                    <label for="thirdPrize">3rd prize</label>
+                    <input type="text" name="thirdPrize" id="thirdPrize" placeholder="Bronze medal">
+                </div>
+            </div>
+
+            <button type="submit" id="submit-btn">Create contest</button>
+            <p id="form-error" class="error" hidden></p>
+        </form>
+    </section>
+
+    <section class="card">
+        <h2>All contests</h2>
+        <ul id="contest-list" class="contest-list"></ul>
+        <p id="empty-state" class="empty">No contests yet.</p>
+    </section>
+</main>
+
+<script src="place.js" defer></script>
+<script src="main.js" defer></script>
+</body>
+</html>

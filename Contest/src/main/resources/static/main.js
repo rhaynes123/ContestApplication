@@ -58,9 +58,15 @@ function render(contests) {
 async function loadContests() {
     const res = await fetch('/contests');
     if (!res.ok) throw new Error('Failed to load contests');
-    render(await res.json());
+    let contests = await res.json();
+    // hack but lets me filter the main page to only active contests since it has no form.
+    if(!form){
+    contests = contests.filter(co => !co.isWon
+        || new Date(co.deadline).getTime() > Date.now());
+    }
+    render(contests);
 }
-
+if(form){
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
     errorEl.hidden = true;
@@ -88,6 +94,8 @@ form.addEventListener('submit', async (e) => {
         submitBtn.disabled = false;
     }
 });
+}
+
 
 loadContests().catch((err) => {
     errorEl.textContent = err.message;
